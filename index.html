@@ -5,125 +5,182 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow, noarchive">
   <meta name="referrer" content="no-referrer">
-  <title>Credencial do Aluno</title>
+  <title>Portal do Aluno | Credencial</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="page-shell">
-    <section class="portal-card" aria-labelledby="tituloPortal">
-      <header class="hero">
-        <div class="hero-badge">CE 113 • Consulta de credencial</div>
-        <div class="hero-icon" aria-hidden="true">ID</div>
-        <h1 id="tituloPortal">Credencial do Aluno</h1>
-        <p>Selecione a etapa de ensino e informe o CPF do aluno.</p>
-      </header>
+  <header class="topbar shadow-sm">
+    <div class="container py-3 py-lg-4 d-flex align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="brand-sesi">SESI</div>
+        <div class="brand-divider d-none d-sm-block"></div>
+        <div>
+          <h1 class="brand-title mb-0">Portal do Aluno</h1>
+          <p class="brand-subtitle mb-0 d-none d-sm-block">Consulte a credencial do seu filho(a)</p>
+        </div>
+      </div>
+      <div class="topbar-message d-none d-lg-flex align-items-center gap-3">
+        <span class="topbar-line"></span>
+        <span>Educação que<br>transforma futuros</span>
+      </div>
+    </div>
+  </header>
 
-      <section class="form-section" aria-label="Consulta da credencial">
-        <div class="step-heading">
-          <span class="step-number">1</span>
-          <div>
-            <h2>Etapa de ensino</h2>
-            <p>Escolha uma das opções abaixo.</p>
-          </div>
+  <main class="container py-4 py-lg-5">
+    <section class="card portal-card border-0 shadow-lg mx-auto">
+      <div class="card-body p-4 p-lg-5">
+        <div class="text-center mb-4 mb-lg-5">
+          <h2 class="display-title mb-2">Consultar Credencial do Aluno</h2>
+          <p class="lead-copy mb-0">Selecione a etapa de ensino, informe o CPF e a data de nascimento do aluno.</p>
         </div>
 
-        <div class="stage-grid" role="radiogroup" aria-label="Etapa de ensino">
-          <button class="stage-card" type="button" data-stage="fundamental1" aria-pressed="false">
-            <span class="stage-title">Fundamental I</span>
-            <span class="stage-subtitle">1º ao 5º ano</span>
-          </button>
-          <button class="stage-card" type="button" data-stage="fundamental2" aria-pressed="false">
-            <span class="stage-title">Fundamental II</span>
-            <span class="stage-subtitle">6º ao 9º ano</span>
-          </button>
-          <button class="stage-card" type="button" data-stage="medio" aria-pressed="false">
-            <span class="stage-title">Ensino Médio</span>
-            <span class="stage-subtitle">1ª à 3ª série</span>
-          </button>
-        </div>
+        <section aria-labelledby="etapaTitulo" class="mb-4">
+          <h3 id="etapaTitulo" class="section-title mb-3">1. Selecione a etapa de ensino</h3>
 
-        <div class="step-heading cpf-step">
-          <span class="step-number">2</span>
-          <div>
-            <h2>CPF do aluno</h2>
-            <p>Digite os 11 números do CPF para localizar a credencial.</p>
-          </div>
-        </div>
-
-        <div class="cpf-row">
-          <div class="input-wrap">
-            <label for="cpfInput">CPF</label>
-            <input
-              id="cpfInput"
-              type="text"
-              inputmode="numeric"
-              autocomplete="off"
-              maxlength="14"
-              placeholder="000.000.000-00"
-              aria-describedby="cpfHelp"
-              disabled
-            >
-            <small id="cpfHelp">A consulta é realizada somente após a seleção da etapa.</small>
-          </div>
-          <button id="btnConsultar" class="btn-primary" type="button" disabled>Consultar</button>
-        </div>
-
-        <div id="status" class="status" role="status" aria-live="polite"></div>
-      </section>
-
-      <section id="resultSection" class="result-section" hidden aria-labelledby="resultadoTitulo">
-        <div class="result-header">
-          <div>
-            <span class="result-kicker">Credencial localizada</span>
-            <h2 id="resultadoTitulo">Dados do aluno</h2>
-          </div>
-          <button id="btnNovaConsulta" class="btn-secondary" type="button">Nova consulta</button>
-        </div>
-
-        <div class="student-name-block">
-          <span class="label">Nome do aluno</span>
-          <strong id="outNome">—</strong>
-          <span id="outSalaBadge" class="room-badge">—</span>
-        </div>
-
-        <div class="data-grid">
-          <article class="data-item">
-            <span class="label">RM</span>
-            <strong id="outRm">—</strong>
-          </article>
-          <article class="data-item">
-            <span class="label">Data Nasc.</span>
-            <strong id="outNascimento">—</strong>
-          </article>
-          <article class="data-item">
-            <span class="label">Sala</span>
-            <strong id="outSala">—</strong>
-          </article>
-          <article class="data-item sensitive-item">
-            <span class="label">Senha</span>
-            <div class="value-action-row">
-              <strong id="outSenha">—</strong>
-              <button id="btnSenha" class="mini-button" type="button" aria-label="Mostrar ou ocultar senha">Mostrar</button>
+          <div class="row g-3" role="radiogroup" aria-label="Etapa de ensino">
+            <div class="col-12 col-md-4">
+              <button class="stage-card w-100 h-100" type="button" data-stage="fundamental1" aria-pressed="false">
+                <span class="radio-indicator" aria-hidden="true"></span>
+                <span>
+                  <strong>Fundamental I</strong>
+                  <small>1º ao 5º ano</small>
+                </span>
+              </button>
             </div>
-          </article>
-          <article class="data-item">
-            <span class="label">CPF</span>
-            <strong id="outCpf">—</strong>
-          </article>
-          <article class="data-item wide">
-            <span class="label">E-mail</span>
-            <strong id="outEmail">—</strong>
-          </article>
-        </div>
+            <div class="col-12 col-md-4">
+              <button class="stage-card w-100 h-100" type="button" data-stage="fundamental2" aria-pressed="false">
+                <span class="radio-indicator" aria-hidden="true"></span>
+                <span>
+                  <strong>Fundamental II</strong>
+                  <small>6º ao 9º ano</small>
+                </span>
+              </button>
+            </div>
+            <div class="col-12 col-md-4">
+              <button class="stage-card w-100 h-100" type="button" data-stage="medio" aria-pressed="false">
+                <span class="radio-indicator" aria-hidden="true"></span>
+                <span>
+                  <strong>Ensino Médio</strong>
+                  <small>1ª à 3ª série</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
 
-        <p class="privacy-note">Confira os dados e feche esta página após a consulta. Não compartilhe a credencial em grupos ou redes sociais.</p>
-      </section>
+        <section aria-labelledby="dadosTitulo" class="mt-4 mt-lg-5">
+          <h3 id="dadosTitulo" class="section-title mb-3">2. Informe os dados do aluno</h3>
+
+          <div class="row g-3">
+            <div class="col-12 col-lg-7">
+              <label for="cpfInput" class="form-label fw-bold">CPF do aluno</label>
+              <div class="input-group input-group-lg">
+                <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                <input
+                  id="cpfInput"
+                  class="form-control"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off"
+                  maxlength="14"
+                  placeholder="000.000.000-00"
+                  aria-describedby="cpfHelp"
+                  disabled
+                >
+              </div>
+              <div id="cpfHelp" class="form-text">Selecione primeiro a etapa de ensino.</div>
+            </div>
+
+            <div class="col-12 col-lg-5">
+              <label for="nascimentoInput" class="form-label fw-bold">Data de nascimento</label>
+              <div class="input-group input-group-lg">
+                <span class="input-group-text bg-white"><i class="bi bi-calendar3"></i></span>
+                <input
+                  id="nascimentoInput"
+                  class="form-control"
+                  type="date"
+                  autocomplete="bday"
+                  disabled
+                >
+              </div>
+              <div class="form-text">Usada para confirmar a identificação do aluno.</div>
+            </div>
+          </div>
+
+          <button id="btnConsultar" class="btn btn-primary btn-lg w-100 mt-4 fw-bold" type="button" disabled>
+            <i class="bi bi-search me-2"></i>Consultar
+          </button>
+
+          <div id="status" class="status mt-3" role="status" aria-live="polite"></div>
+        </section>
+
+        <section id="resultSection" class="result-panel mt-4" hidden aria-labelledby="resultadoTitulo">
+          <div class="alert alert-success border-0 d-flex align-items-center gap-3 mb-0 result-success" role="alert">
+            <span class="success-icon"><i class="bi bi-check-lg"></i></span>
+            <div>
+              <h3 id="resultadoTitulo" class="h5 fw-bold mb-1">Aluno encontrado!</h3>
+              <p class="mb-0">Confira abaixo as informações da credencial.</p>
+            </div>
+          </div>
+
+          <div class="credential-table bg-white border rounded-4 overflow-hidden">
+            <div class="credential-row">
+              <span>RM</span>
+              <strong id="outRm">—</strong>
+            </div>
+            <div class="credential-row">
+              <span>Nome do Aluno</span>
+              <strong id="outNome">—</strong>
+            </div>
+            <div class="credential-row">
+              <span>Data Nasc.</span>
+              <strong id="outNascimento">—</strong>
+            </div>
+            <div class="credential-row">
+              <span>Sala</span>
+              <strong><span id="outSalaBadge" class="badge room-badge">—</span><span id="outSala" class="visually-hidden">—</span></strong>
+            </div>
+            <div class="credential-row">
+              <span>Senha</span>
+              <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                <strong id="outSenha">••••••••</strong>
+                <button id="btnSenha" class="btn btn-outline-secondary btn-sm" type="button">
+                  <i class="bi bi-eye me-1"></i><span>Mostrar</span>
+                </button>
+              </div>
+            </div>
+            <div class="credential-row">
+              <span>CPF</span>
+              <strong id="outCpf">—</strong>
+            </div>
+            <div class="credential-row border-bottom-0">
+              <span>E-mail</span>
+              <strong id="outEmail" class="text-break">—</strong>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end mt-3">
+            <button id="btnNovaConsulta" class="btn btn-light border fw-semibold" type="button">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>Nova consulta
+            </button>
+          </div>
+        </section>
+      </div>
     </section>
+
+    <footer class="text-center py-4 footer-copy">
+      <strong>SESI – Serviço Social da Indústria</strong><br>
+      <span>Educação para um futuro melhor</span>
+    </footer>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module" src="script.js"></script>
 </body>
 </html>
