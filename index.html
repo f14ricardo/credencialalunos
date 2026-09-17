@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <title>Credencial do Aluno</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="portal-card" aria-labelledby="tituloPortal">
+      <header class="hero">
+        <div class="hero-badge">CE 113 • Consulta de credencial</div>
+        <div class="hero-icon" aria-hidden="true">ID</div>
+        <h1 id="tituloPortal">Credencial do Aluno</h1>
+        <p>Selecione a etapa de ensino e informe o CPF do aluno.</p>
+      </header>
+
+      <section class="form-section" aria-label="Consulta da credencial">
+        <div class="step-heading">
+          <span class="step-number">1</span>
+          <div>
+            <h2>Etapa de ensino</h2>
+            <p>Escolha uma das opções abaixo.</p>
+          </div>
+        </div>
+
+        <div class="stage-grid" role="radiogroup" aria-label="Etapa de ensino">
+          <button class="stage-card" type="button" data-stage="fundamental1" aria-pressed="false">
+            <span class="stage-title">Fundamental I</span>
+            <span class="stage-subtitle">1º ao 5º ano</span>
+          </button>
+          <button class="stage-card" type="button" data-stage="fundamental2" aria-pressed="false">
+            <span class="stage-title">Fundamental II</span>
+            <span class="stage-subtitle">6º ao 9º ano</span>
+          </button>
+          <button class="stage-card" type="button" data-stage="medio" aria-pressed="false">
+            <span class="stage-title">Ensino Médio</span>
+            <span class="stage-subtitle">1ª à 3ª série</span>
+          </button>
+        </div>
+
+        <div class="step-heading cpf-step">
+          <span class="step-number">2</span>
+          <div>
+            <h2>CPF do aluno</h2>
+            <p>Digite os 11 números do CPF para localizar a credencial.</p>
+          </div>
+        </div>
+
+        <div class="cpf-row">
+          <div class="input-wrap">
+            <label for="cpfInput">CPF</label>
+            <input
+              id="cpfInput"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="14"
+              placeholder="000.000.000-00"
+              aria-describedby="cpfHelp"
+              disabled
+            >
+            <small id="cpfHelp">A consulta é realizada somente após a seleção da etapa.</small>
+          </div>
+          <button id="btnConsultar" class="btn-primary" type="button" disabled>Consultar</button>
+        </div>
+
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </section>
+
+      <section id="resultSection" class="result-section" hidden aria-labelledby="resultadoTitulo">
+        <div class="result-header">
+          <div>
+            <span class="result-kicker">Credencial localizada</span>
+            <h2 id="resultadoTitulo">Dados do aluno</h2>
+          </div>
+          <button id="btnNovaConsulta" class="btn-secondary" type="button">Nova consulta</button>
+        </div>
+
+        <div class="student-name-block">
+          <span class="label">Nome do aluno</span>
+          <strong id="outNome">—</strong>
+          <span id="outSalaBadge" class="room-badge">—</span>
+        </div>
+
+        <div class="data-grid">
+          <article class="data-item">
+            <span class="label">RM</span>
+            <strong id="outRm">—</strong>
+          </article>
+          <article class="data-item">
+            <span class="label">Data Nasc.</span>
+            <strong id="outNascimento">—</strong>
+          </article>
+          <article class="data-item">
+            <span class="label">Sala</span>
+            <strong id="outSala">—</strong>
+          </article>
+          <article class="data-item sensitive-item">
+            <span class="label">Senha</span>
+            <div class="value-action-row">
+              <strong id="outSenha">—</strong>
+              <button id="btnSenha" class="mini-button" type="button" aria-label="Mostrar ou ocultar senha">Mostrar</button>
+            </div>
+          </article>
+          <article class="data-item">
+            <span class="label">CPF</span>
+            <strong id="outCpf">—</strong>
+          </article>
+          <article class="data-item wide">
+            <span class="label">E-mail</span>
+            <strong id="outEmail">—</strong>
+          </article>
+        </div>
+
+        <p class="privacy-note">Confira os dados e feche esta página após a consulta. Não compartilhe a credencial em grupos ou redes sociais.</p>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
