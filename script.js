@@ -24,6 +24,7 @@ const db = getFirestore(app);
 
 const stageButtons = [...document.querySelectorAll(".stage-card")];
 const cpfInput = document.getElementById("cpfInput");
+const nascimentoInput = document.getElementById("nascimentoInput");
 const cpfHelp = document.getElementById("cpfHelp");
 const btnConsultar = document.getElementById("btnConsultar");
 const btnNovaConsulta = document.getElementById("btnNovaConsulta");
@@ -45,7 +46,6 @@ const outputs = {
 let etapaSelecionada = "";
 let senhaAtual = "";
 let senhaVisivel = false;
-let debounceCpf;
 
 function somenteDigitos(valor) {
   return String(valor ?? "").replace(/\D/g, "");
@@ -78,12 +78,15 @@ function cpfValido(cpf) {
 }
 
 function normalizarSala(valor) {
-  return String(valor ?? "").trim().toUpperCase().replace(/\s+/g, "");
+  return String(valor ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "");
 }
 
 function identificarEtapa(sala) {
   const normalizada = normalizarSala(sala);
-  const match = normalizada.match(/^(\d+)(EF|EM)(?:-|\s)?[A-Z]?$/i);
+  const match = normalizada.match(/^(\d+)(EF|EM)(?:-?[A-Z])?$/i);
   if (!match) return "";
 
   const ano = Number(match[1]);
@@ -95,41 +98,60 @@ function identificarEtapa(sala) {
   return "";
 }
 
-function formatarData(valor) {
-  if (!valor) return "—";
+function dataParaISO(valor) {
+  if (!valor) return "";
 
   if (typeof valor === "object" && typeof valor.toDate === "function") {
     const data = valor.toDate();
-    return new Intl.DateTimeFormat("pt-BR").format(data);
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+    return `${ano}-${mes}-${dia}`;
   }
 
   const texto = String(valor).trim();
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(texto)) return texto;
 
   if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) {
-    const [ano, mes, dia] = texto.split("-");
-    return `${dia}/${mes}/${ano}`;
+    return texto;
   }
 
-  return texto || "—";
+  const br = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (br) {
+    const dia = br[1].padStart(2, "0");
+    const mes = br[2].padStart(2, "0");
+    return `${br[3]}-${mes}-${dia}`;
+  }
+
+  return "";
+}
+
+function formatarDataBR(valor) {
+  const iso = dataParaISO(valor);
+  if (!iso) return String(valor ?? "").trim() || "—";
+  const [ano, mes, dia] = iso.split("-");
+  return `${dia}/${mes}/${ano}`;
 }
 
 function definirStatus(texto = "", tipo = "") {
   statusBox.textContent = texto;
-  statusBox.className = `status${tipo ? ` ${tipo}` : ""}`;
+  statusBox.className = `status mt-3${tipo ? ` ${tipo}` : ""}`;
 }
 
 function mapearAluno(item) {
+  const nascimentoOriginal =
+    item.dataNascimentoBR ||
+    item.dataNascimento ||
+    item["Data Nasc."] ||
+    item["Data Nasc"] ||
+    item.Nascimento ||
+    "";
+
   return {
     rm: String(item.rm || item.RM || "").trim(),
-    nome: String(item.nome || item["Nome do Aluno"] || item["Nome"] || "").trim(),
-    nascimento: formatarData(
-      item.dataNascimentoBR ||
-      item.dataNascimento ||
-      item["Data Nasc."] ||
-      item["Data Nasc"] ||
-      item.Nascimento
-    ),
+    nome: String(item.nome || item["Nome do Aluno"] || item.Nome || "").trim(),
+    nascimentoOriginal,
+    nascimentoISO: dataParaISO(nascimentoOriginal),
+    nascimentoBR: formatarDataBR(nascimentoOriginal),
     sala: normalizarSala(item.sala || item.Sala || ""),
     senha: String(item.senha || item.Senha || "").trim(),
     cpf: somenteDigitos(item.cpf || item.CPF || ""),
@@ -137,25 +159,25 @@ function mapearAluno(item) {
   };
 }
 
-async function executarConsulta(field, value) {
-  const q = query(
+async function executarConsulta(campo, valor) {
+  const consulta = query(
     collection(db, COLLECTION_NAME),
-    where(field, "==", value),
+    where(campo, "==", valor),
     limit(1)
   );
 
-  const snapshot = await getDocs(q);
+  const snapshot = await getDocs(consulta);
   if (snapshot.empty) return null;
   return mapearAluno(snapshot.docs[0].data());
 }
 
 async function buscarAlunoPorCpf(cpf) {
-  const formatos = [cpf, formatarCpf(cpf)];
+  const cpfFormatado = formatarCpf(cpf);
   const tentativas = [
-    ["cpf", formatos[0]],
-    ["cpf", formatos[1]],
-    ["CPF", formatos[0]],
-    ["CPF", formatos[1]]
+    ["cpf", cpf],
+    ["cpf", cpfFormatado],
+    ["CPF", cpf],
+    ["CPF", cpfFormatado]
   ];
 
   for (const [campo, valor] of tentativas) {
@@ -169,14 +191,17 @@ async function buscarAlunoPorCpf(cpf) {
 function ocultarSenha() {
   senhaVisivel = false;
   outputs.senha.textContent = senhaAtual ? "••••••••" : "—";
-  btnSenha.textContent = "Mostrar";
+  const texto = btnSenha.querySelector("span");
+  const icone = btnSenha.querySelector("i");
+  if (texto) texto.textContent = "Mostrar";
+  if (icone) icone.className = "bi bi-eye me-1";
 }
 
 function preencherResultado(aluno) {
   senhaAtual = aluno.senha;
   outputs.rm.textContent = aluno.rm || "—";
   outputs.nome.textContent = aluno.nome || "—";
-  outputs.nascimento.textContent = aluno.nascimento || "—";
+  outputs.nascimento.textContent = aluno.nascimentoBR || "—";
   outputs.sala.textContent = aluno.sala || "—";
   outputs.salaBadge.textContent = aluno.sala || "—";
   outputs.cpf.textContent = aluno.cpf ? formatarCpf(aluno.cpf) : "—";
@@ -193,6 +218,12 @@ function limparResultado() {
   senhaVisivel = false;
 }
 
+function atualizarEstadoConsulta() {
+  const cpf = somenteDigitos(cpfInput.value);
+  const dataPreenchida = Boolean(nascimentoInput.value);
+  btnConsultar.disabled = !etapaSelecionada || cpf.length !== 11 || !dataPreenchida;
+}
+
 async function consultar() {
   limparResultado();
 
@@ -202,44 +233,60 @@ async function consultar() {
   }
 
   const cpf = somenteDigitos(cpfInput.value);
+  const nascimentoInformado = nascimentoInput.value;
 
   if (!cpfValido(cpf)) {
     definirStatus("Digite um CPF válido com 11 números.", "error");
     return;
   }
 
+  if (!nascimentoInformado) {
+    definirStatus("Informe a data de nascimento do aluno.", "error");
+    return;
+  }
+
   btnConsultar.disabled = true;
   cpfInput.disabled = true;
+  nascimentoInput.disabled = true;
   definirStatus("Consultando credencial...");
 
   try {
     const aluno = await buscarAlunoPorCpf(cpf);
 
-    if (!aluno || identificarEtapa(aluno.sala) !== etapaSelecionada) {
-      definirStatus("CPF não localizado para a etapa selecionada.", "error");
+    if (!aluno) {
+      definirStatus("Dados não localizados. Confira as informações digitadas.", "error");
+      return;
+    }
+
+    if (identificarEtapa(aluno.sala) !== etapaSelecionada) {
+      definirStatus("Dados não localizados para a etapa selecionada.", "error");
+      return;
+    }
+
+    if (!aluno.nascimentoISO || aluno.nascimentoISO !== nascimentoInformado) {
+      definirStatus("CPF ou data de nascimento não conferem.", "error");
       return;
     }
 
     preencherResultado(aluno);
-    definirStatus("Credencial localizada com sucesso.", "success");
+    definirStatus("");
   } catch (erro) {
     const codigo = erro?.code || "";
+    console.error("Erro ao consultar credencial:", erro);
 
     if (codigo.includes("permission-denied")) {
-      definirStatus("A consulta está bloqueada pelas regras do banco de dados. É necessário liberar um acesso seguro para este portal.", "error");
+      definirStatus(
+        "A consulta está bloqueada pelas regras do banco de dados. É necessário liberar um acesso seguro para este portal.",
+        "error"
+      );
     } else {
       definirStatus("Não foi possível consultar agora. Tente novamente em instantes.", "error");
     }
   } finally {
     cpfInput.disabled = false;
-    btnConsultar.disabled = false;
-    cpfInput.focus();
+    nascimentoInput.disabled = false;
+    atualizarEstadoConsulta();
   }
-}
-
-function atualizarEstadoConsulta() {
-  const cpf = somenteDigitos(cpfInput.value);
-  btnConsultar.disabled = !etapaSelecionada || cpf.length !== 11;
 }
 
 stageButtons.forEach((button) => {
@@ -253,7 +300,8 @@ stageButtons.forEach((button) => {
     });
 
     cpfInput.disabled = false;
-    cpfHelp.textContent = "Digite o CPF completo. A busca é feita somente por correspondência exata.";
+    nascimentoInput.disabled = false;
+    cpfHelp.textContent = "Digite os 11 números do CPF. A busca é feita por correspondência exata.";
     definirStatus("");
     limparResultado();
     atualizarEstadoConsulta();
@@ -263,38 +311,56 @@ stageButtons.forEach((button) => {
 
 cpfInput.addEventListener("input", () => {
   cpfInput.value = formatarCpf(cpfInput.value);
-  limparResultado();
   definirStatus("");
+  limparResultado();
   atualizarEstadoConsulta();
+});
 
-  clearTimeout(debounceCpf);
-  const cpf = somenteDigitos(cpfInput.value);
-
-  if (etapaSelecionada && cpf.length === 11 && cpfValido(cpf)) {
-    debounceCpf = setTimeout(() => consultar(), 500);
-  }
+nascimentoInput.addEventListener("input", () => {
+  definirStatus("");
+  limparResultado();
+  atualizarEstadoConsulta();
 });
 
 cpfInput.addEventListener("keydown", (evento) => {
-  if (evento.key === "Enter" && !btnConsultar.disabled) {
-    consultar();
-  }
+  if (evento.key === "Enter" && !btnConsultar.disabled) consultar();
+});
+
+nascimentoInput.addEventListener("keydown", (evento) => {
+  if (evento.key === "Enter" && !btnConsultar.disabled) consultar();
 });
 
 btnConsultar.addEventListener("click", consultar);
-
-btnNovaConsulta.addEventListener("click", () => {
-  cpfInput.value = "";
-  limparResultado();
-  definirStatus("");
-  atualizarEstadoConsulta();
-  cpfInput.focus();
-});
 
 btnSenha.addEventListener("click", () => {
   if (!senhaAtual) return;
 
   senhaVisivel = !senhaVisivel;
   outputs.senha.textContent = senhaVisivel ? senhaAtual : "••••••••";
-  btnSenha.textContent = senhaVisivel ? "Ocultar" : "Mostrar";
+
+  const texto = btnSenha.querySelector("span");
+  const icone = btnSenha.querySelector("i");
+
+  if (texto) texto.textContent = senhaVisivel ? "Ocultar" : "Mostrar";
+  if (icone) icone.className = senhaVisivel ? "bi bi-eye-slash me-1" : "bi bi-eye me-1";
 });
+
+btnNovaConsulta.addEventListener("click", () => {
+  etapaSelecionada = "";
+  stageButtons.forEach((item) => {
+    item.classList.remove("is-selected");
+    item.setAttribute("aria-pressed", "false");
+  });
+
+  cpfInput.value = "";
+  nascimentoInput.value = "";
+  cpfInput.disabled = true;
+  nascimentoInput.disabled = true;
+  cpfHelp.textContent = "Selecione primeiro a etapa de ensino.";
+  definirStatus("");
+  limparResultado();
+  atualizarEstadoConsulta();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+atualizarEstadoConsulta();
